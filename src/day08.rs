@@ -52,7 +52,7 @@ pub(crate) fn step2() -> u32 {
     numbers
         .into_iter()
         .map(|(d, n)| {
-            let sorted_digits = identify_digits(d);
+            let sorted_digits = identify_digits(d).unwrap();
             compute_numbers(sorted_digits, n)
         })
         .sum()
@@ -72,27 +72,23 @@ six     len 6   !contains letters from seven        second
 nine    len 6   contains letters from four          second
 eight   len 7   unique                              first
  */
-fn identify_digits(digits: Vec<String>) -> HashMap<String, u32> {
+fn identify_digits(digits: Vec<String>) -> Option<HashMap<String, u32>> {
     // first pass
-    let one = digits.iter().find(|s| is_one(s)).unwrap();
-    let seven = digits.iter().find(|s| is_seven(s)).unwrap();
-    let four = digits.iter().find(|s| is_four(s)).unwrap();
-    let eight = digits.iter().find(|s| is_eight(s)).unwrap();
+    let one = digits.iter().find(|s| is_one(s))?;
+    let seven = digits.iter().find(|s| is_seven(s))?;
+    let four = digits.iter().find(|s| is_four(s))?;
+    let eight = digits.iter().find(|s| is_eight(s))?;
     // second pass
     let len6 = digits
         .to_owned()
         .into_iter()
         .filter(|s| s.len() == 6)
         .collect_vec();
-    let nine = len6
-        .iter()
-        .find(|s| four.chars().all(|c| s.contains(c)))
-        .unwrap();
+    let nine = len6.iter().find(|s| four.chars().all(|c| s.contains(c)))?;
     let six = len6
         .iter()
-        .find(|s| !seven.chars().all(|c| s.contains(c)))
-        .unwrap();
-    let zero = len6.iter().find(|s| s != &six && s != &nine).unwrap();
+        .find(|s| !seven.chars().all(|c| s.contains(c)))?;
+    let zero = len6.iter().find(|s| s != &six && s != &nine)?;
 
     // third pass
     let len5 = digits
@@ -100,28 +96,26 @@ fn identify_digits(digits: Vec<String>) -> HashMap<String, u32> {
         .into_iter()
         .filter(|s| s.len() == 5)
         .collect_vec();
-    let three = len5
-        .iter()
-        .find(|s| seven.chars().all(|c| s.contains(c)))
-        .unwrap();
+    let three = len5.iter().find(|s| seven.chars().all(|c| s.contains(c)))?;
     let five = len5
         .iter()
-        .find(|&s| s.chars().all(|c| six.as_str().contains(c)))
-        .unwrap();
-    let two = len5.iter().find(|s| s != &three && s != &five).unwrap();
+        .find(|&s| s.chars().all(|c| six.as_str().contains(c)))?;
+    let two = len5.iter().find(|s| s != &three && s != &five)?;
 
-    let mut sorted_numbers = HashMap::new();
-    sorted_numbers.insert(zero.to_owned(), 0);
-    sorted_numbers.insert(one.to_owned(), 1);
-    sorted_numbers.insert(two.to_owned(), 2);
-    sorted_numbers.insert(three.to_owned(), 3);
-    sorted_numbers.insert(four.to_owned(), 4);
-    sorted_numbers.insert(five.to_owned(), 5);
-    sorted_numbers.insert(six.to_owned(), 6);
-    sorted_numbers.insert(seven.to_owned(), 7);
-    sorted_numbers.insert(eight.to_owned(), 8);
-    sorted_numbers.insert(nine.to_owned(), 9);
-    sorted_numbers
+    let sorted_numbers = HashMap::from([
+        (zero.to_owned(), 0),
+        (one.to_owned(), 1),
+        (two.to_owned(), 2),
+        (three.to_owned(), 3),
+        (four.to_owned(), 4),
+        (five.to_owned(), 5),
+        (six.to_owned(), 6),
+        (seven.to_owned(), 7),
+        (eight.to_owned(), 8),
+        (nine.to_owned(), 9),
+    ]);
+
+    Some(sorted_numbers)
 }
 
 fn compute_numbers(sorted_digits: HashMap<String, u32>, number: Vec<String>) -> u32 {
@@ -143,7 +137,7 @@ fn test_step2() {
     let sum: u32 = numbers
         .into_iter()
         .map(|(d, n)| {
-            let sorted_digits = identify_digits(d);
+            let sorted_digits = identify_digits(d).unwrap();
             println!("{:?} {:?}", sorted_digits, n);
             compute_numbers(sorted_digits, n)
         })
